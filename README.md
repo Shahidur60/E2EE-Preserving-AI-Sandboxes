@@ -27,7 +27,7 @@ npm install
 # macOS
 brew install ollama
 
-# 或者访问 https://ollama.ai 下载安装包
+# Or download from https://ollama.ai
 ```
 
 ### 3. Download TinyLLaMA Model
@@ -51,13 +51,13 @@ npm start
 
 ```
 chat/
-├── server.js          # 主服务器文件
-├── userA.html         # UserA聊天界面
-├── userB.html         # UserB聊天界面
-├── chat.txt           # 聊天记录文件
-├── notes.txt          # LLM知识库文件
-├── package.json       # 项目依赖
-└── README.md          # 说明文档
+├── server.js          # Main server logic
+├── userA.html         # Chat UI for UserA
+├── userB.html         # Chat UI for UserB
+├── chat.txt           # Message log file
+├── notes.txt          # Knowledge base for LLM
+├── package.json       # Project dependencies
+└── README.md          # Documentation
 ```
 
 ## Usage
@@ -108,7 +108,7 @@ app.listen(3000, () => {
 - Ensure Ollama is installed and running
 - Confirm TinyLLaMA is downloaded:`ollama list`
 - Check server console logs for errors
-- Test manually：`ollama run tinyllama "你好"`
+- Test manually：`ollama run tinyllama
 
 ### Messages Not Syncing
 
