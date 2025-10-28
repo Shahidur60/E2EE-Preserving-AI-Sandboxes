@@ -1,25 +1,27 @@
-# 端到端加密聊天系统
+# End-to-End Encrypted Chat System
 
-一个简单的端到端加密聊天系统，集成本地TinyLLaMA进行智能回复与网页内RAG查询。
+A simple end-to-end encrypted chat system integrating a local TinyLLaMA model for intelligent replies and web-based Retrieval-Augmented Generation (RAG).
 
-## 功能特性
+## Features
 
-- 🔐 **端到端加密**: 使用Base64编码保护消息传输
-- 👥 **多用户支持**: UserA和UserB可以同时聊天
-- 🤖 **LLM集成**: 集成本地TinyLLaMA模型进行智能回复
-- 💾 **消息持久化**: 所有消息保存到本地文件
-- 📝 **知识库支持**: LLM可以读取notes.txt作为上下文
-- 🎨 **现代化UI**: 响应式设计，支持实时消息更新
+- 🔐 **End-to-End Encryption**: Messages are encoded using Base64 for protected transmission
+- 👥 **Multi-User Support**: UserA and UserB can chat simultaneously
+- 🤖 **LLM Integration**: Local TinyLLaMA model provides intelligent auto-replies
+- 💾 **Message Persistence**: All messages are stored locally on disk
+- 📝 **Knowledge Base Support**: LLM can read `notes.txt` as contextual knowledge
+- 🎨 **Modern UI**: Responsive design with real-time updates
 
-## 快速开始
+## Quick Start
 
-### 1. 安装依赖
-
+### 1. Install Dependencies
 ```bash
 npm install
+
+
+
 ```
 
-### 2. 安装Ollama（用于运行TinyLLaMA）
+### 2. Install Ollama (for running TinyLLaMA)
 
 ```bash
 # macOS
@@ -28,24 +30,24 @@ brew install ollama
 # 或者访问 https://ollama.ai 下载安装包
 ```
 
-### 3. 下载TinyLLaMA模型
+### 3. Download TinyLLaMA Model
 
 ```bash
 ollama pull tinyllama
 ```
 
-### 4. 启动服务器
+### 4. Start the Server
 
 ```bash
 npm start
 ```
 
-### 5. 打开聊天界面
+### 5. Open the Chat Interface
 
 - UserA: http://localhost:3000/userA.html
 - UserB: http://localhost:3000/userB.html
 
-## 文件结构
+## Project Structure
 
 ```
 chat/
@@ -58,65 +60,67 @@ chat/
 └── README.md          # 说明文档
 ```
 
-## 使用说明
+## Usage
 
-1. **发送消息**: 在输入框中输入消息，按回车或点击发送按钮
-2. **查看消息**: 消息会自动同步到两个界面
-3. **LLM回复**: 每次发送消息后，LLM会自动生成回复
-4. **清空聊天**: 点击"清空聊天"按钮可以清空所有记录
-5. **知识库**: 编辑notes.txt文件来为LLM提供上下文信息
+1. Send messages: Type into the input box and press Enter or click Send
+2. View messages: Messages sync automatically between both users
+3. LLM replies: AI generates a response after each user message
+4. Clear chat: Click the Clear Chat button to reset logs
+5. Knowledge base: Edit notes.txt to provide context for the LLM
 
-## 技术实现
+## Technical Stack
 
-- **前端**: 纯HTML/CSS/JavaScript，使用Fetch API
-- **后端**: Node.js + Express
-- **加密**: Base64编码（简单实现）
-- **LLM**: Ollama + TinyLLaMA
-- **存储**: 本地文件系统
+- Frontend: HTML, CSS, JavaScript with Fetch API
+- Backend: Node.js and Express
+- Encryption: Base64 encoding (basic implementation)
+- LLM: Ollama with TinyLLaMA
+- Storage: Local file system
 
-## 自定义配置
+## Custom Configuration
 
-### 修改LLM模型
+### Change LLM Model
 
-在server.js中修改`runTinyLLaMA`函数：
+In 'server.js', modify the 'runTinyLLaMA' function:
 
 ```javascript
 const ollama = spawn('ollama', ['run', 'your-model-name', prompt]);
 ```
 
-### 修改端口
+### Change Port
 
-在server.js底部修改：
+At the bottom of server.js:
 
 ```javascript
 app.listen(3000, () => {
-  // 修改端口号
+  // Change port here
 });
 ```
 
-### 添加更多用户
+### Add More Users
 
-1. 复制userA.html创建新用户界面
-2. 修改用户标识符
-3. 更新样式以区分不同用户
+1. Duplicate userA.html to create new user pages
+2. Update the user identifier in each page
+3. Adjust styles to differentiate users
 
-## 故障排除
+## Troubleshooting
 
-### LLM不工作
-- 确保Ollama已安装并运行
-- 检查TinyLLaMA模型是否已下载：`ollama list`
-- 查看服务器控制台错误信息
-- 尝试手动运行：`ollama run tinyllama "你好"`
+### LLM Not Working
+- Ensure Ollama is installed and running
+- Confirm TinyLLaMA is downloaded:`ollama list`
+- Check server console logs for errors
+- Test manually：`ollama run tinyllama "你好"`
 
-### 消息不同步
-- 检查网络连接
-- 确保服务器正在运行
-- 查看浏览器控制台错误
+### Messages Not Syncing
 
-### 端口被占用
-- 修改server.js中的端口号
-- 或者停止占用端口的其他服务
+- Verify network connectivity
+- Ensure the server is running
+- Check browser developer console for errors
 
-## 许可证
+### Port Already in Use
+
+- Change the port in server.js
+- Or terminate the process occupying the port
+
+## License
 
 MIT License
