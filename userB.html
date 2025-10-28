@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User B - End-to-End Encrypted Chat</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        h2 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, #f093fb, #f5576c);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        #msg {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 25px;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        #msg:focus {
+            border-color: #f093fb;
+        }
+        button {
+            padding: 12px 24px;
+            background: linear-gradient(45deg, #f093fb, #f5576c);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: transform 0.2s;
+        }
+        button:hover {
+            transform: translateY(-2px);
+        }
+        button:disabled {
+            opacity: 0.6;
+            transform: none;
+        }
+        .chat-container {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            height: 400px;
+            overflow-y: auto;
+            border: 1px solid #e1e5e9;
+        }
+        .message {
+            margin-bottom: 10px;
+            padding: 8px 12px;
+            border-radius: 15px;
+            max-width: 70%;
+            word-wrap: break-word;
+        }
+        .message.userA {
+            background: #e9ecef;
+            color: #333;
+        }
+        .message.userB {
+            background: linear-gradient(45deg, #f093fb, #f5576c);
+            color: white;
+            margin-left: auto;
+        }
+        .message.llm {
+            background: #d1ecf1;
+            color: #0c5460;
+            border-left: 4px solid #17a2b8;
+        }
+        .timestamp {
+            font-size: 12px;
+            opacity: 0.7;
+            margin-top: 5px;
+        }
+        .status {
+            text-align: center;
+            margin: 10px 0;
+            font-size: 14px;
+            color: #666;
+        }
+        .controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+        .btn-small {
+            padding: 8px 16px;
+            font-size: 14px;
+            background: #6c757d;
+        }
+        .btn-filter {
+            padding: 8px 16px;
+            font-size: 14px;
+            background: #28a745;
+        }
+        .llm-panel {
+            background: #e3f2fd;
+            border: 1px solid #90caf9;
+            border-radius: 10px;
+            padding: 12px;
+            margin: 12px 0 16px;
+        }
+        .llm-panel h3 {
+            margin: 0 0 8px 0;
+            font-size: 16px;
+            color: #1565c0;
+        }
+        .llm-input {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+        #llmText {
+            flex: 1;
+            padding: 10px 12px;
+            border: 2px solid #90caf9;
+            border-radius: 10px;
+            outline: none;
+        }
+        #llmBtn {
+            padding: 10px 16px;
+            background: #42a5f5;
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+        .llm-output {
+            background: #fff;
+            border: 1px dashed #90caf9;
+            border-radius: 8px;
+            padding: 10px;
+            min-height: 40px;
+            white-space: pre-wrap;
+        }
+        .filter-panel {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 10px;
+            padding: 12px;
+            margin: 12px 0 16px;
+        }
+        .filter-panel h3 {
+            margin: 0 0 8px 0;
+            font-size: 16px;
+            color: #495057;
+        }
+        .filter-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .filter-result {
+            background: #fff;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 10px;
+            margin-top: 10px;
+            min-height: 40px;
+            white-space: pre-wrap;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>👤 User B - End-to-End Encrypted Chat</h2>
+        
+        <div class="input-group">
+            <input id="msg" placeholder="Type message..." onkeypress="handleKeyPress(event)" />
+            <button onclick="send()" id="sendBtn">Send</button>
+        </div>
+        
+        <div class="status" id="status">Connected</div>
+
+        <div class="llm-panel">
+            <h3>🤖 ChatGPT (RAG: chat.txt + notes.txt)</h3>
+            <div class="llm-input">
+                <input id="llmText" placeholder="Ask ChatGPT (Enter to send)" onkeypress="handleLlmKey(event)" />
+                <button id="llmBtn" onclick="askLLM()">Ask</button>
+                <button id="directLlmBtn" onclick="askDirectLLM()" style="background: #dc3545; margin-left: 8px;">Direct LLM (No Filter)</button>
+            </div>
+            <div class="llm-output" id="llmOut">Output will appear here</div>
+        </div>
+
+        <div class="filter-panel">
+            <h3>🛡️ Content Filter</h3>
+            <div class="filter-buttons">
+                <button class="btn-filter" onclick="filterChat()">Filter Chat History</button>
+                <button class="btn-filter" onclick="filterNotes()">Filter Notes</button>
+            </div>
+            <div class="filter-result" id="filterResult"></div>
+        </div>
+        
+        <div class="chat-container" id="chat"></div>
+        
+        <div class="controls">
+            <button class="btn-small" onclick="clearChat()">Clear Chat</button>
+            <button class="btn-small" onclick="load()">Refresh</button>
+        </div>
+    </div>
+
+    <script>
+        let isConnected = true;
+        
+        async function send() {
+            const msgInput = document.getElementById("msg");
+            const sendBtn = document.getElementById("sendBtn");
+            const msg = msgInput.value.trim();
+            
+            if (!msg) return;
+            
+            sendBtn.disabled = true;
+            sendBtn.textContent = "Sending...";
+            
+            try {
+                const encoded = btoa(encodeURIComponent(msg));
+                const response = await fetch("/send", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ user: "UserB", message: encoded })
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    msgInput.value = "";
+                    load();
+                } else {
+                    alert("Send failed: " + data.error);
+                }
+            } catch (error) {
+                console.error("Send error:", error);
+                alert("Send failed, please check network connection");
+            } finally {
+                sendBtn.disabled = false;
+                sendBtn.textContent = "Send";
+            }
+        }
+        
+        async function load() {
+            try {
+                const res = await fetch("/messages");
+                const data = await res.json();
+                
+                if (data.success) {
+                    displayMessages(data.messages);
+                    isConnected = true;
+                    document.getElementById("status").textContent = "Connected";
+                } else {
+                    throw new Error(data.error);
+                }
+            } catch (error) {
+                console.error("Load messages error:", error);
+                isConnected = false;
+                document.getElementById("status").textContent = "Disconnected";
+            }
+        }
+        
+        function displayMessages(messages) {
+            const chat = document.getElementById("chat");
+            chat.innerHTML = "";
+            
+            messages.forEach(msg => {
+                const messageDiv = document.createElement("div");
+                messageDiv.className = `message ${msg.user.toLowerCase()}`;
+                
+                const text = decodeURIComponent(msg.text);
+                messageDiv.innerHTML = `
+                    <div>${text}</div>
+                    <div class="timestamp">${new Date(msg.timestamp).toLocaleTimeString()}</div>
+                `;
+                
+                chat.appendChild(messageDiv);
+            });
+            
+            chat.scrollTop = chat.scrollHeight;
+        }
+        
+        function handleKeyPress(event) {
+            if (event.key === "Enter") {
+                send();
+            }
+        }
+        
+        async function clearChat() {
+            if (confirm("Are you sure you want to clear all chat records?")) {
+                try {
+                    await fetch("/clear", { method: "POST" });
+                    load();
+                } catch (error) {
+                    alert("Clear failed: " + error.message);
+                }
+            }
+        }
+        
+        // Content filtering functions
+        async function filterChat() {
+            try {
+                const res = await fetch("/messages");
+                const data = await res.json();
+                
+                if (data.success && data.messages.length > 0) {
+                    const chatContent = data.messages.map(m => `${m.user}: ${m.text}`).join('\n');
+                    await filterContent(chatContent, 'chat');
+                } else {
+                    alert("No chat history to filter");
+                }
+            } catch (error) {
+                alert("Failed to load chat history: " + error.message);
+            }
+        }
+        
+        async function filterNotes() {
+            try {
+                const res = await fetch("/notes.txt");
+                const notesContent = await res.text();
+                
+                if (notesContent.trim()) {
+                    await filterContent(notesContent, 'notes');
+                } else {
+                    alert("No notes content to filter");
+                }
+            } catch (error) {
+                alert("Failed to load notes: " + error.message);
+            }
+        }
+        
+        async function filterContent(content, type) {
+            const resultDiv = document.getElementById("filterResult");
+            resultDiv.style.display = "block";
+            resultDiv.textContent = "Filtering content...";
+            
+            try {
+                const response = await fetch("/filter-content", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ content: content, type: type })
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    resultDiv.innerHTML = `
+                        <strong>Original ${type}:</strong><br>
+                        ${data.originalContent}<br><br>
+                        <strong>Filtered ${type}:</strong><br>
+                        ${data.filteredContent}
+                    `;
+                } else {
+                    resultDiv.textContent = "Filtering failed: " + data.error;
+                }
+            } catch (error) {
+                resultDiv.textContent = "Filtering failed: " + error.message;
+            }
+        }
+        
+        // LLM functions
+        async function askLLM() {
+            const input = document.getElementById('llmText');
+            const btn = document.getElementById('llmBtn');
+            const out = document.getElementById('llmOut');
+            const q = input.value.trim();
+            if (!q) return;
+            try {
+                btn.disabled = true;
+                btn.textContent = 'Processing...';
+                out.textContent = 'Requesting ChatGPT...';
+                const encoded = btoa(encodeURIComponent(q));
+                const res = await fetch('/llm', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt: encoded })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    const text = decodeURIComponent(atob(data.output));
+                    out.textContent = text;
+                } else {
+                    out.textContent = 'LLM Error: ' + (data.error || 'unknown');
+                }
+            } catch (e) {
+                out.textContent = 'Request failed: ' + e.message;
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Ask';
+            }
+        }
+
+        // Direct LLM function - bypass filter
+        async function askDirectLLM() {
+            const input = document.getElementById('llmText');
+            const btn = document.getElementById('directLlmBtn');
+            const out = document.getElementById('llmOut');
+            const q = input.value.trim();
+            if (!q) return;
+            try {
+                btn.disabled = true;
+                btn.textContent = 'Processing...';
+                out.textContent = 'Requesting ChatGPT (Direct, No Filter)...';
+                const encoded = btoa(encodeURIComponent(q));
+                const res = await fetch('/direct-llm', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt: encoded, user: 'UserB' })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    const text = decodeURIComponent(atob(data.output));
+                    out.textContent = text;
+                    // Refresh chat records to show new LLM conversation
+                    load();
+                } else {
+                    out.textContent = 'Direct LLM Error: ' + (data.error || 'unknown');
+                }
+            } catch (e) {
+                out.textContent = 'Direct LLM Request failed: ' + e.message;
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Direct LLM (No Filter)';
+            }
+        }
+
+        function handleLlmKey(e) {
+            if (e.key === 'Enter') askLLM();
+        }
+        
+        // Auto-refresh messages
+        setInterval(load, 2000);
+        
+        // Initial load
+        load();
+    </script>
+</body>
+</html>

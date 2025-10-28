@@ -1,0 +1,2 @@
+This is local knowledge for the LLM.
+I live in China.

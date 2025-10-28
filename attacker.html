@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attacker Monitor - Message Interception</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        h2 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .status {
+            text-align: center;
+            margin: 10px 0;
+            font-size: 14px;
+            color: #666;
+        }
+        .intercepted-container {
+            background: #fff5f5;
+            border: 2px solid #ff6b6b;
+            border-radius: 10px;
+            padding: 15px;
+            height: 500px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+        }
+        .intercepted-message {
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 8px;
+            border-left: 4px solid #ff6b6b;
+            background: #ffe8e8;
+        }
+        .message-header {
+            font-weight: bold;
+            color: #d63031;
+            margin-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .message-content {
+            background: white;
+            padding: 8px;
+            border-radius: 5px;
+            margin: 5px 0;
+            word-wrap: break-word;
+        }
+        .message-meta {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+        .controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 15px;
+        }
+        button {
+            padding: 10px 20px;
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: transform 0.2s;
+        }
+        button:hover {
+            transform: translateY(-2px);
+        }
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin: 15px 0;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        .stat-item {
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ff6b6b;
+        }
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+        }
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>🚨 Attacker Monitor - Message Interception</h2>
+        
+        <div class="warning">
+            ⚠️ This is a security testing tool to demonstrate the importance of end-to-end encryption
+        </div>
+        
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-number" id="totalMessages">0</div>
+                <div class="stat-label">Total Messages</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="userAMessages">0</div>
+                <div class="stat-label">UserA Messages</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="userBMessages">0</div>
+                <div class="stat-label">UserB Messages</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="llmMessages">0</div>
+                <div class="stat-label">LLM Replies</div>
+            </div>
+        </div>
+        
+        <div class="status" id="status">Monitoring...</div>
+        
+        <div class="intercepted-container" id="interceptedMessages">
+            <div style="text-align: center; color: #666; margin-top: 50px;">
+                Waiting for message interception...
+            </div>
+        </div>
+        
+        <div class="controls">
+            <button onclick="clearMessages()">Clear Records</button>
+            <button onclick="toggleListening()" id="toggleBtn">Pause Monitoring</button>
+            <button onclick="exportMessages()">Export Data</button>
+        </div>
+    </div>
+
+    <script>
+        let isListening = true;
+        let messageCount = {
+            total: 0,
+            userA: 0,
+            userB: 0,
+            llm: 0
+        };
+        
+        async function fetchMessages() {
+            if (!isListening) return;
+            
+            try {
+                const res = await fetch("/attacker/messages");
+                const data = await res.json();
+                
+                if (data.success) {
+                    displayInterceptedMessages(data.messages);
+                    updateStats(data);
+                    document.getElementById("status").textContent = "Monitoring...";
+                } else {
+                    throw new Error(data.error);
+                }
+            } catch (error) {
+                console.error("Monitoring error:", error);
+                document.getElementById("status").textContent = "Monitoring disconnected";
+            }
+        }
+        
+        function displayInterceptedMessages(messages) {
+            const container = document.getElementById("interceptedMessages");
+            container.innerHTML = "";
+            
+            if (messages.length === 0) {
+                container.innerHTML = '<div style="text-align: center; color: #666; margin-top: 50px;">Waiting for message interception...</div>';
+                return;
+            }
+            
+            messages.forEach(msg => {
+                const messageDiv = document.createElement("div");
+                messageDiv.className = "intercepted-message";
+                
+                const decodedText = decodeURIComponent(msg.text);
+                const timestamp = new Date(msg.timestamp).toLocaleString();
+                
+                messageDiv.innerHTML = `
+                    <div class="message-header">
+                        <span>👤 ${msg.user}</span>
+                        <span>🕐 ${timestamp}</span>
+                    </div>
+                    <div class="message-content">
+                        <strong>Intercepted Message:</strong><br>
+                        ${decodedText}
+                    </div>
+                    <div class="message-meta">
+                        ID: ${msg.id} | Timestamp: ${msg.timestamp}
+                    </div>
+                `;
+                
+                container.appendChild(messageDiv);
+            });
+            
+            container.scrollTop = container.scrollHeight;
+        }
+        
+        function updateStats(data) {
+            document.getElementById("totalMessages").textContent = data.totalCount || 0;
+            document.getElementById("userAMessages").textContent = data.userACount || 0;
+            document.getElementById("userBMessages").textContent = data.userBCount || 0;
+            document.getElementById("llmMessages").textContent = data.llmCount || 0;
+        }
+        
+        function clearMessages() {
+            if (confirm("Are you sure you want to clear all intercepted records?")) {
+                document.getElementById("interceptedMessages").innerHTML = 
+                    '<div style="text-align: center; color: #666; margin-top: 50px;">Waiting for message interception...</div>';
+                
+                // Reset statistics
+                messageCount = { total: 0, userA: 0, userB: 0, llm: 0 };
+                updateStats({ totalCount: 0, userACount: 0, userBCount: 0, llmCount: 0 });
+            }
+        }
+        
+        function toggleListening() {
+            isListening = !isListening;
+            const btn = document.getElementById("toggleBtn");
+            const status = document.getElementById("status");
+            
+            if (isListening) {
+                btn.textContent = "Pause Monitoring";
+                status.textContent = "Monitoring...";
+            } else {
+                btn.textContent = "Start Monitoring";
+                status.textContent = "Monitoring paused";
+            }
+        }
+        
+        function exportMessages() {
+            // Export functionality can be implemented here
+            alert("Export functionality: Can export intercepted messages to JSON or CSV format");
+        }
+        
+        // Regular message fetching
+        setInterval(fetchMessages, 1000);
+        
+        // Initial load
+        fetchMessages();
+    </script>
+</body>
+</html>

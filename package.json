@@ -1,0 +1,35 @@
+{
+  "name": "e2ee-chat",
+  "version": "1.0.0",
+  "description": "端到端加密聊天系统，集成本地LLM",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "install-ollama": "echo '请手动安装 Ollama: https://ollama.ai'",
+    "setup-tinyllama": "ollama pull tinyllama"
+  },
+  "keywords": [
+    "e2ee",
+    "chat",
+    "encryption",
+    "llm",
+    "tinyllama",
+    "base64"
+  ],
+  "author": "E2EE Chat System",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "body-parser": "^1.20.2",
+    "openai": "^4.59.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "local"
+  }
+}
